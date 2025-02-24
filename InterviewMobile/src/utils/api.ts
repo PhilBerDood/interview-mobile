@@ -29,10 +29,14 @@ export async function fetchData(path: StorageKey, id: number) {
 }
 
 export async function saveData(data: any, path: StorageKey) {
+  saveDataWithSpecifiedId(data, path, data.id) 
+}
+
+export async function saveDataWithSpecifiedId(data: any, path: StorageKey, id: number) {
   // Simulate network delay
   await delay(500);
 
-  const key = getStorageKey(path, data.id);
+  const key = getStorageKey(path, id);
   try {
     const dataString = JSON.stringify(data);
     await AsyncStorage.setItem(key, dataString);
@@ -59,6 +63,7 @@ export async function saveMultiple(data: any[], path: StorageKey) {
     throw error;
   }
 }
+
 
 export async function updateData(update: any, path: StorageKey) {
   // Simulate network delay

@@ -2,8 +2,10 @@ import { Text } from "@react-navigation/elements";
 import { StaticScreenProps } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { Button, Modal, Pressable, StyleSheet, View } from "react-native";
-import { fetchData, getAllConsents } from "../../utils/api";
+//Added save Data
+import { fetchData, getAllConsents, saveDataWithSpecifiedId } from "../../utils/api";
 import { Consent, Patient, PatientConsent } from "../../utils/dto";
+
 
 type Props = StaticScreenProps<{
   patientId: number;
@@ -138,8 +140,9 @@ export function PatientProfile({ route }: Props) {
       agreed: boolean,
       consentId: number,
     ) {
-      // TODO: Implement function to save agreed patient consents
-      return patientConsents;
+      return patientConsents.map(patientConsent =>
+        patientConsent.consentId === consentId ? { ...patientConsent, agreed: agreed } : patientConsent
+      );
     }
 
     return (
@@ -181,6 +184,16 @@ export function PatientProfile({ route }: Props) {
           />
         ))
       )}
+      <Button
+          title="Edit Consent Settings"
+          onPress={() =>
+          {
+            /* open consent form */ 
+            setShowConsentForm(
+              true,
+            )
+          }}
+        />
       <Modal visible={showConsentForm} animationType="fade" transparent>
         <View
           style={[
@@ -188,16 +201,22 @@ export function PatientProfile({ route }: Props) {
             { backgroundColor: "#b0c4de", opacity: 0.9 },
           ]}
         >
-          <Text>{patient.name} has not agreed to any consents</Text>
+          {
+          /* Added a check for if the patient hasn't agreed to any consents  */
+          agreedPatientConsents.every(patientConsent => patientConsent.agreed === false) && <Text>{patient.name} has not agreed to any consents</Text>
+          }
           <ConsentForm patient={patient} />
           <Button
-            title="press me"
+            title="Save Consent Settings"
             disabled={!agreedPatientConsents.length}
             onPress={() =>
-              /* save consents using the api for persistence */ setShowConsentForm(
+            {
+              /* save consents using the api for persistence */ 
+              saveDataWithSpecifiedId(agreedPatientConsents, "@patientConsent", patient.id);
+              setShowConsentForm(
                 false,
               )
-            }
+            }}
           />
         </View>
       </Modal>

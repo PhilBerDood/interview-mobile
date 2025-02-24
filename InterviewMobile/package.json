@@ -1,7 +1,7 @@
 {
   "name": "interviewmobile",
   "version": "1.0.0",
-  "main": "src/main.tsx",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start --dev-client",
     "web": "expo start --web",
