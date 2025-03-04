@@ -13,7 +13,7 @@ function delay(ms: number) {
 // A specific key is used to store each piece of data
 // You need to use the same key to fetch the data or update it
 
-export async function fetchData(path: StorageKey, id: number) {
+export async function fetchData<T>(path: StorageKey, id: number) : Promise<T | null> {  
   // Simulate network delay (e.g., 500ms)
   await delay(500);
 
@@ -28,15 +28,11 @@ export async function fetchData(path: StorageKey, id: number) {
   }
 }
 
-export async function saveData(data: any, path: StorageKey) {
-  saveDataWithSpecifiedId(data, path, data.id) 
-}
-
-export async function saveDataWithSpecifiedId(data: any, path: StorageKey, id: number) {
+export async function saveData<T extends { id: number }>(data: T, path: StorageKey): Promise<T> {
   // Simulate network delay
   await delay(500);
 
-  const key = getStorageKey(path, id);
+  const key = getStorageKey(path, data.id);
   try {
     const dataString = JSON.stringify(data);
     await AsyncStorage.setItem(key, dataString);
@@ -44,11 +40,11 @@ export async function saveDataWithSpecifiedId(data: any, path: StorageKey, id: n
   } catch (error) {
     console.error("Error saving data:", error);
     throw error;
-  }
-}
+  }}
 
-export async function saveMultiple(data: any[], path: StorageKey) {
-  await delay(500);
+  export async function saveMultiple<T extends { id: number }>(data: T[], path: StorageKey): Promise<T[]> {  
+    // Simulate network delay
+    await delay(500);
 
   const paths = data.map((item) => {
     const key = getStorageKey(path, item.id);
@@ -65,7 +61,7 @@ export async function saveMultiple(data: any[], path: StorageKey) {
 }
 
 
-export async function updateData(update: any, path: StorageKey) {
+export async function updateData<T extends { id: number }>(update: T, path: StorageKey): Promise<T | null> {  
   // Simulate network delay
   await delay(500);
 

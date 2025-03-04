@@ -3,8 +3,8 @@ import { StaticScreenProps } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { Button, Modal, Pressable, StyleSheet, View } from "react-native";
 //Added save Data
-import { fetchData, getAllConsents, saveDataWithSpecifiedId } from "../../utils/api";
-import { Consent, Patient, PatientConsent } from "../../utils/dto";
+import { fetchData, getAllConsents, updateData } from "../../utils/api";
+import { Consent, Patient, PatientConsent, PatientConsentContainer } from "../../utils/dto";
 
 
 type Props = StaticScreenProps<{
@@ -41,12 +41,13 @@ export function PatientProfile({ route }: Props) {
 
   async function loadAgreedPatientConsents(defaultValue: PatientConsent[]) {
     try {
-      const agreedPatientConsent = await fetchData(
+      const loadedPatientConsentContainer = await fetchData<PatientConsentContainer>(
         "@patientConsent",
         route.params.patientId,
       );
-      setAgreedPatientConsents(agreedPatientConsent ?? defaultValue);
-      setShowConsentForm(!agreedPatientConsent?.length);
+      const agreedPatientConsent = loadedPatientConsentContainer?.patientConsents ?? defaultValue;
+      setAgreedPatientConsents(agreedPatientConsent);
+      setShowConsentForm(!loadedPatientConsentContainer);
     } catch (error) {
       console.error("Error loading agreed patient consent:", error);
     } finally {
@@ -70,7 +71,7 @@ export function PatientProfile({ route }: Props) {
 
   async function loadPatient() {
     try {
-      const patient = await fetchData("@patient", route.params.patientId);
+      const patient = await fetchData<Patient>("@patient", route.params.patientId);
       setPatient(patient);
     } catch (error) {
       console.error("Error loading patient:", error);
@@ -106,7 +107,7 @@ export function PatientProfile({ route }: Props) {
 
     async function loadConsent(consentId: number) {
       try {
-        const consent = await fetchData("@consent", consentId);
+        const consent = await fetchData<Consent>("@consent", consentId);
         setConsent(consent);
       } catch (error) {
         console.error("Error loading consent:", error);
@@ -185,6 +186,7 @@ export function PatientProfile({ route }: Props) {
         ))
       )}
       <Button
+          /* Added a button to open consent form page */ 
           title="Edit Consent Settings"
           onPress={() =>
           {
@@ -212,7 +214,8 @@ export function PatientProfile({ route }: Props) {
             onPress={() =>
             {
               /* save consents using the api for persistence */ 
-              saveDataWithSpecifiedId(agreedPatientConsents, "@patientConsent", patient.id);
+              const patientConsentContainer: PatientConsentContainer = {id: patient.id, patientConsents: agreedPatientConsents};
+              updateData(patientConsentContainer, "@patientConsent");
               setShowConsentForm(
                 false,
               )
